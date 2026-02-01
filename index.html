@@ -1,0 +1,28 @@
+<div class="app">
+  <!-- HOME -->
+  <div id="homeScreen">
+    <div class="home-header">
+      <h2>Your Tiers</h2>
+      <div>
+        <button id="importLinkBtn">Import Link</button>
+        <button id="addTierBtn">+ Tier</button>
+      </div>
+    </div>
+    <div class="tier-grid" id="tierGrid"></div>
+  </div>
+
+  <!-- EDITOR -->
+  <div id="editorScreen">
+    <div class="top-bar">
+      <button class="back-btn" onclick="goHome()">Back</button>
+      <input type="text" id="tierNameInput" placeholder="Tier Name">
+      <button class="save-btn" onclick="saveTierList()">Save</button>
+    </div>
+
+    <div class="controls">
+      <input type="file" id="imageUpload" accept="image/*" multiple>
+    </div>
+
+    <div class="tier-list" id="tierList"></div>
+  </div>
+</div>
