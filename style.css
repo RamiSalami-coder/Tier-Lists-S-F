@@ -8,6 +8,7 @@ body {
   height: 100vh;
 }
 
+/* Phone Frame */
 .app {
   width: min(390px, 92vw);
   aspect-ratio: 390 / 844;
@@ -20,12 +21,12 @@ body {
   flex-direction: column;
 }
 
+/* HOME */
 #homeScreen { padding: 20px; overflow-y: auto; flex: 1; }
 
 .home-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 #addTierBtn, #importLinkBtn {
@@ -38,7 +39,7 @@ body {
 }
 
 #addTierBtn { background: #ff4d4d; }
-#importLinkBtn { background: #2196F3; margin-right: 6px; }
+#importLinkBtn { background: #2196F3; }
 
 .tier-grid {
   margin-top: 20px;
@@ -52,10 +53,10 @@ body {
   background: #1e1e1e;
   padding: 20px 10px;
   border-radius: 12px;
-  cursor: pointer;
   text-align: center;
   font-weight: bold;
   border: 2px solid #333;
+  cursor: pointer;
 }
 
 .delete-tier-btn, .share-tier-btn {
@@ -74,43 +75,30 @@ body {
 .delete-tier-btn { right: 6px; }
 .share-tier-btn { left: 6px; }
 
+/* EDITOR */
 #editorScreen { display: none; flex-direction: column; height: 100%; }
 
 .top-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 10px;
+  gap: 6px;
   background: #1a1a1a;
 }
 
 .top-bar input {
   flex: 1;
-  margin: 0 8px;
-  font-size: 16px;
-  padding: 5px;
+  padding: 6px;
   border-radius: 6px;
   border: none;
 }
 
-.top-bar button {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.save-btn { background: #4CAF50; color: white; }
-.back-btn { background: #444; color: white; }
+.save-btn { background: #4CAF50; color: white; border: none; padding: 6px 10px; border-radius: 6px; }
+.back-btn { background: #444; color: white; border: none; padding: 6px 10px; border-radius: 6px; }
 
 .controls { text-align: center; padding: 6px; }
 
-.tier-list { flex: 1; overflow-y: auto; }
-
 .tier-row { display: flex; min-height: 80px; border-bottom: 2px solid #222; }
-
 .tier-label {
   width: 60px;
   display: flex;
@@ -135,15 +123,9 @@ body {
   height: 65px;
   border-radius: 8px;
   overflow: hidden;
-  cursor: grab;
 }
 
-.item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
+.item img { width: 100%; height: 100%; object-fit: cover; }
 
 .delete-btn {
   position: absolute;
