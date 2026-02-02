@@ -1,24 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tier List App</title>
-
-  <!-- CSS FILE -->
-  <link rel="stylesheet" href="/Tier-Lists-S-F/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <div class="app">
+
     <!-- HOME SCREEN -->
     <div id="homeScreen">
       <div class="home-header">
-        <h2>Your Tiers</h2>
-        <div>
-          <button id="importLinkBtn">Import Link</button>
-          <button id="addTierBtn">+ Tier</button>
-        </div>
+        <button id="importLinkBtn">Import Link</button>
+        <button id="addTierBtn">+ Tier</button>
       </div>
       <div class="tier-grid" id="tierGrid"></div>
     </div>
@@ -26,20 +21,20 @@
     <!-- EDITOR SCREEN -->
     <div id="editorScreen">
       <div class="top-bar">
-        <button class="back-btn" onclick="goHome()">Back</button>
-        <input type="text" id="tierNameInput" placeholder="Tier Name">
-        <button class="save-btn" onclick="saveTierList()">Save</button>
+        <button class="back-btn" id="backBtn">Back</button>
+        <input type="text" id="tierTitle" placeholder="Tier List Name" />
+        <button class="save-btn" id="saveTierBtn">Save</button>
       </div>
 
       <div class="controls">
-        <input type="file" id="imageUpload" accept="image/*" multiple>
+        <input type="file" id="imageUpload" multiple accept="image/*" />
       </div>
 
       <div class="tier-list" id="tierList"></div>
     </div>
+
   </div>
 
-  <!-- JAVASCRIPT FILE -->
-  <script src="/Tier-Lists-S-F/script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
