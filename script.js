@@ -1,18 +1,93 @@
-const tiers = ["S","A","B","C","D","F"];
-let draggedItem = null;
-let currentEditingId = null;
-
 const homeScreen = document.getElementById("homeScreen");
 const editorScreen = document.getElementById("editorScreen");
 const tierGrid = document.getElementById("tierGrid");
-const tierList = document.getElementById("tierList");
+const tierListDiv = document.getElementById("tierList");
+const tierTitleInput = document.getElementById("tierTitle");
 
-document.getElementById("addTierBtn").onclick = () => openEditor();
+let currentTier = null;
 
-function goHome() {
-  editorScreen.style.display = "none";
-  homeScreen.style.display = "block";
-  loadHome();
+const tiers = ["S","A","B","C","D","F"];
+
+function createEditorRows(data={}) {
+  tierListDiv.innerHTML = "";
+  tiers.forEach(t => {
+    const row = document.createElement("div");
+    row.className = "tier-row";
+
+    const label = document.createElement("div");
+    label.className = `tier-label ${t}`;
+    label.textContent = t;
+
+    const items = document.createElement("div");
+    items.className = "tier-items";
+    items.dataset.tier = t;
+
+    (data[t] || []).forEach(src => addImageItem(src, items));
+
+    row.appendChild(label);
+    row.appendChild(items);
+    tierListDiv.appendChild(row);
+  });
+}
+
+function addImageItem(src, container) {
+  const item = document.createElement("div");
+  item.className = "item";
+
+  const img = document.createElement("img");
+  img.src = src;
+
+  const del = document.createElement("button");
+  del.textContent = "×";
+  del.className = "delete-btn";
+  del.onclick = () => item.remove();
+
+  item.appendChild(img);
+  item.appendChild(del);
+  container.appendChild(item);
+}
+
+imageUpload.onchange = e => {
+  [...e.target.files].forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => addImageItem(ev.target.result, document.querySelector(".tier-items"));
+    reader.readAsDataURL(file);
+  });
+};
+
+document.addEventListener("paste", e => {
+  const items = e.clipboardData.items;
+  for (let item of items) {
+    if (item.type.startsWith("image")) {
+      const file = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = ev => addImageItem(ev.target.result, document.querySelector(".tier-items"));
+      reader.readAsDataURL(file);
+    }
+  }
+});
+
+function saveTier() {
+  const saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
+
+  const data = {};
+  document.querySelectorAll(".tier-items").forEach(div => {
+    const tier = div.dataset.tier;
+    data[tier] = [...div.querySelectorAll("img")].map(img => img.src);
+  });
+
+  const tierObj = {
+    id: currentTier || Date.now(),
+    name: tierTitleInput.value || "Untitled",
+    data
+  };
+
+  const index = saved.findIndex(t => t.id === tierObj.id);
+  if (index >= 0) saved[index] = tierObj;
+  else saved.push(tierObj);
+
+  localStorage.setItem("tierLists", JSON.stringify(saved));
+  goHome();
 }
 
 function loadHome() {
@@ -23,167 +98,82 @@ function loadHome() {
     const card = document.createElement("div");
     card.className = "tier-card";
     card.textContent = tier.name;
-    card.onclick = () => openEditor(tier.id);
+    card.onclick = () => openTier(tier);
 
-    const delBtn = document.createElement("button");
-    delBtn.className = "delete-tier-btn";
-    delBtn.textContent = "×";
-    delBtn.onclick = (e) => { e.stopPropagation(); deleteTierList(tier.id); };
+    const del = document.createElement("button");
+    del.textContent = "×";
+    del.className = "delete-tier-btn";
+    del.onclick = e => {
+      e.stopPropagation();
+      deleteTier(tier.id);
+    };
 
-    const shareBtn = document.createElement("button");
-    shareBtn.className = "share-tier-btn";
-    shareBtn.textContent = "📎";
-    shareBtn.onclick = (e) => { e.stopPropagation(); shareTier(tier); };
+    const share = document.createElement("button");
+    share.textContent = "📎";
+    share.className = "share-tier-btn";
+    share.onclick = e => {
+      e.stopPropagation();
+      shareTier(tier);
+    };
 
-    card.appendChild(delBtn);
-    card.appendChild(shareBtn);
+    card.appendChild(del);
+    card.appendChild(share);
     tierGrid.appendChild(card);
   });
 }
 
-function deleteTierList(id) {
+function deleteTier(id) {
   let saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
   saved = saved.filter(t => t.id !== id);
   localStorage.setItem("tierLists", JSON.stringify(saved));
   loadHome();
 }
 
-function openEditor(id = null) {
+function openTier(tier) {
+  currentTier = tier.id;
+  tierTitleInput.value = tier.name;
+  createEditorRows(tier.data);
   homeScreen.style.display = "none";
   editorScreen.style.display = "flex";
-  document.getElementById("tierNameInput").value = "";
-  tierList.innerHTML = "";
-  currentEditingId = id || Date.now();
-  createTiers();
-  if (id) loadTierList(id);
 }
 
-function createTiers() {
-  tiers.forEach(tier => {
-    const row = document.createElement("div");
-    row.className = "tier-row";
-
-    const label = document.createElement("div");
-    label.className = "tier-label " + tier;
-    label.textContent = tier;
-
-    const items = document.createElement("div");
-    items.className = "tier-items";
-    items.dataset.tier = tier;
-    addDropEvents(items);
-
-    row.appendChild(label);
-    row.appendChild(items);
-    tierList.appendChild(row);
-  });
-}
-
-function createItem(src, tier = "F") {
-  const div = document.createElement("div");
-  div.className = "item";
-  div.draggable = true;
-
-  const img = document.createElement("img");
-  img.src = src;
-
-  const del = document.createElement("button");
-  del.className = "delete-btn";
-  del.textContent = "×";
-  del.onclick = () => div.remove();
-
-  div.appendChild(img);
-  div.appendChild(del);
-
-  div.addEventListener("dragstart", () => {
-    draggedItem = div;
-    setTimeout(() => div.style.display = "none", 0);
-  });
-
-  div.addEventListener("dragend", () => {
-    draggedItem = null;
-    div.style.display = "block";
-  });
-
-  document.querySelector(`[data-tier="${tier}"]`).appendChild(div);
-}
-
-document.getElementById("imageUpload").addEventListener("change", e => {
-  [...e.target.files].forEach(file => {
-    if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = ev => createItem(ev.target.result);
-    reader.readAsDataURL(file);
-  });
-});
-
-document.addEventListener("paste", e => {
-  [...e.clipboardData.items].forEach(item => {
-    if (item.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = ev => createItem(ev.target.result);
-      reader.readAsDataURL(item.getAsFile());
-    }
-  });
-});
-
-function addDropEvents(container) {
-  container.addEventListener("dragover", e => e.preventDefault());
-  container.addEventListener("drop", e => {
-    e.preventDefault();
-    if (draggedItem) container.appendChild(draggedItem);
-  });
-}
-
-function saveTierList() {
-  const name = document.getElementById("tierNameInput").value.trim() || "Untitled Tier";
-  const data = [];
-
-  document.querySelectorAll(".tier-items").forEach(tierDiv => {
-    const tier = tierDiv.dataset.tier;
-    tierDiv.querySelectorAll("img").forEach(img => {
-      data.push({ src: img.src, tier });
-    });
-  });
-
-  const saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
-  const index = saved.findIndex(t => t.id === currentEditingId);
-  const tierObj = { id: currentEditingId, name, items: data };
-
-  if (index >= 0) saved[index] = tierObj;
-  else saved.push(tierObj);
-
-  localStorage.setItem("tierLists", JSON.stringify(saved));
-  goHome();
-}
-
-function loadTierList(id) {
-  const saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
-  const tier = saved.find(t => t.id === id);
-  if (!tier) return;
-  document.getElementById("tierNameInput").value = tier.name;
-  tier.items.forEach(item => createItem(item.src, item.tier));
+function goHome() {
+  editorScreen.style.display = "none";
+  homeScreen.style.display = "block";
+  loadHome();
 }
 
 function shareTier(tier) {
-  const dataStr = btoa(JSON.stringify(tier));
-  const url = `${window.location.href.split("?")[0]}?tier=${dataStr}`;
-  navigator.clipboard.writeText(url).then(() => alert("Share link copied!"));
+  const encoded = btoa(JSON.stringify(tier));
+  const url = `${location.origin}${location.pathname}?tier=${encoded}`;
+  navigator.clipboard.writeText(url);
+  alert("Tier link copied!");
 }
 
+document.getElementById("addTierBtn").onclick = () => {
+  currentTier = null;
+  tierTitleInput.value = "";
+  createEditorRows();
+  homeScreen.style.display = "none";
+  editorScreen.style.display = "flex";
+};
+
+document.getElementById("saveTierBtn").onclick = saveTier;
+document.getElementById("backBtn").onclick = goHome;
+
 document.getElementById("importLinkBtn").onclick = () => {
-  const link = prompt("Paste tier link here:");
+  const link = prompt("Paste tier link:");
   if (!link) return;
   try {
     const url = new URL(link);
-    const dataStr = url.searchParams.get("tier");
-    const tier = JSON.parse(atob(dataStr));
-    tier.id = Date.now();
+    const data = JSON.parse(atob(url.searchParams.get("tier")));
+    data.id = Date.now();
     const saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
-    saved.push(tier);
+    saved.push(data);
     localStorage.setItem("tierLists", JSON.stringify(saved));
     loadHome();
   } catch {
-    alert("Invalid tier link!");
+    alert("Invalid link");
   }
 };
 
